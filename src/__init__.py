@@ -1,0 +1,1 @@
+"""TradeAutoReport source package."""
