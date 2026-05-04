@@ -181,6 +181,14 @@ def _build_sections(sections: list[tuple[str, str]]) -> str:
     )
 
 
+def _first_nonempty_line(text: str) -> str:
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped
+    return ""
+
+
 def build_html_report(
     ticker: str,
     report_type: str,
@@ -194,7 +202,8 @@ def build_html_report(
     generated_at = generated_at or datetime.now(REPORT_TZ)
     sections = _parse_sections(report)
     section_map = {title: body for title, body in sections}
-    headline = section_map.get("今日结论") or report.splitlines()[0].strip() or "DeepSeek Trading Report"
+    first_section_body = sections[0][1] if sections else ""
+    headline = _first_nonempty_line(first_section_body) or _first_nonempty_line(report) or "DeepSeek Trading Report"
     stance, stance_class = _derive_stance(market_summary, indicators)
     section_cards = _build_sections(sections)
 

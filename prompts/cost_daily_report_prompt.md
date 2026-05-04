@@ -10,15 +10,22 @@ Rules:
 - Be direct, practical, and structured.
 - If data is incomplete, state the limitation briefly and still give a usable plan.
 - Use Markdown level-2 headings (`##`) for each required section so the report can be rendered into HTML later.
+- Use exactly the section names below, in this order.
+- If helpful, use bullet points inside each section, but do not add extra top-level sections.
 
 Required sections:
-1. 今日结论
-2. 技术面分析
-3. 支撑与阻力
-4. 今日交易计划
-5. 挂单建议
-6. 风险管理
-7. Journal Summary
+1. 市场背景
+2. 前一交易日复盘
+3. 基本面与催化
+4. 新闻与信息流
+5. 分析师快照
+6. 市场情绪拆解
+7. 技术分析
+8. 交易方法说明
+9. 支撑压力位
+10. 交易计划（包括长期，波段和日内交易计划）
+11. 风控提醒
+12. 信息来源与时间戳
 
 Input context:
 Ticker: {ticker}
