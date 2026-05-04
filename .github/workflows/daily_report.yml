@@ -23,6 +23,11 @@ jobs:
     env:
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       DEEPSEEK_MODEL: deepseek-v4-flash
+      GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+      GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+      GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+      GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
       REPORT_TICKER: ${{ github.event.inputs.ticker || 'COST' }}
       REPORT_TYPE: ${{ github.event.inputs.report_type || 'premarket' }}
 

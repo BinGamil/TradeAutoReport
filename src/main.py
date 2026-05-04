@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 import os
 import sys
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 import pandas as pd
+from dotenv import load_dotenv
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from src.config import DEFAULT_PERIOD, DEFAULT_TICKER
+    from src.email_sender import send_report_email
     from src.deepseek_report import generate_trading_report
     from src.logger import get_logger
     from src.market_data import get_price_history
@@ -20,6 +24,7 @@ if __package__ in (None, ""):
     from src.technicals import atr14, macd, moving_average, rsi14
 else:
     from .config import DEFAULT_PERIOD, DEFAULT_TICKER
+    from .email_sender import send_report_email
     from .deepseek_report import generate_trading_report
     from .logger import get_logger
     from .market_data import get_price_history
@@ -27,6 +32,7 @@ else:
     from .technicals import atr14, macd, moving_average, rsi14
 
 logger = get_logger(__name__)
+TORONTO_TZ = ZoneInfo("America/Toronto")
 
 
 @dataclass
@@ -133,6 +139,8 @@ def print_summary(summary: ReportSummary) -> None:
 def main() -> int:
     """Entry point used by the CLI and future automation jobs."""
 
+    load_dotenv()
+
     try:
         ticker, report_type = _get_run_settings()
         summary = build_summary(ticker=ticker)
@@ -164,6 +172,11 @@ def main() -> int:
             report_type=report_type,
             report=report,
         )
+        email_subject = f"{summary.ticker} Premarket Trading Plan - {datetime.now(TORONTO_TZ):%Y-%m-%d}"
+        try:
+            send_report_email(subject=email_subject, body=report)
+        except Exception:
+            logger.exception("Email delivery failed; keeping the saved Markdown report.")
     except Exception as exc:  # pragma: no cover - top-level guard
         logger.exception("Unable to build report summary: %s", exc)
         return 1
