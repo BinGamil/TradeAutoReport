@@ -68,7 +68,7 @@ If Gmail settings are present, the app also sends the generated report as a plai
 
 The workflow file is `.github/workflows/daily_report.yml`.
 
-It runs automatically Monday through Friday at `12:35 UTC`, which matches `8:35 AM America/Toronto` during daylight saving time.
+It runs automatically Monday through Friday at `4:30 PM America/Toronto` using GitHub's timezone-aware schedule.
 
 ### GitHub Secrets
 
