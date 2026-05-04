@@ -14,6 +14,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from src.config import DEFAULT_PERIOD, DEFAULT_TICKER
     from src.deepseek_report import generate_trading_report
+    from src.html_report import save_html_report
     from src.logger import get_logger
     from src.market_data import get_price_history
     from src.report_writer import save_markdown_report
@@ -21,6 +22,7 @@ if __package__ in (None, ""):
 else:
     from .config import DEFAULT_PERIOD, DEFAULT_TICKER
     from .deepseek_report import generate_trading_report
+    from .html_report import save_html_report
     from .logger import get_logger
     from .market_data import get_price_history
     from .report_writer import save_markdown_report
@@ -164,12 +166,25 @@ def main() -> int:
             report_type=report_type,
             report=report,
         )
+        try:
+            html_path = save_html_report(
+                ticker=summary.ticker,
+                report_type=report_type,
+                report=report,
+                market_summary=market_summary,
+                indicators=indicators,
+            )
+        except Exception:
+            html_path = None
+            logger.exception("Unable to write HTML report; keeping the Markdown report.")
     except Exception as exc:  # pragma: no cover - top-level guard
         logger.exception("Unable to build report summary: %s", exc)
         return 1
 
     print(report)
     print(f"\nSaved report: {report_path}")
+    if html_path:
+        print(f"Saved HTML report: {html_path}")
     return 0
 
 

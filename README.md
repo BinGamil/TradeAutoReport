@@ -2,7 +2,7 @@
 
 Automated daily premarket stock trading report system.
 
-This project fetches daily market data for `COST` with `yfinance`, calculates technical indicators, and generates a Markdown premarket report with DeepSeek. It is structured so we can later add Gmail email delivery, Notion journal writing, news summaries, and multiple tickers.
+This project fetches daily market data for `COST` with `yfinance`, calculates technical indicators, and generates a DeepSeek premarket report in both Markdown and HTML. It is structured so we can later add Gmail email delivery, Notion journal writing, news summaries, and multiple tickers.
 
 Current features:
 
@@ -15,6 +15,7 @@ Current features:
 - ATR14
 - DeepSeek-generated trading report with fallback behavior
 - Markdown report output under `reports/YYYY-MM-DD_COST_premarket.md`
+- HTML report output under `reports/YYYY-MM-DD_COST_premarket.html`
 - GitHub Actions scheduled automation and manual dispatch support
 
 ## Requirements
@@ -53,7 +54,9 @@ python src/main.py
 
 You can also use `python -m src.main` if you prefer module execution.
 
-That will fetch at least one year of daily data for the selected ticker, calculate indicators, generate the DeepSeek report, and save the Markdown output under `reports/`. If DeepSeek is unavailable, the program tries OpenAI when `OPENAI_API_KEY` is set. If both fail or are missing, it falls back to a rule-based Chinese report.
+That will fetch at least one year of daily data for the selected ticker, calculate indicators, generate the DeepSeek report, and save both Markdown and HTML output under `reports/`. If DeepSeek is unavailable, the program tries OpenAI when `OPENAI_API_KEY` is set. If both fail or are missing, it falls back to a rule-based Chinese report.
+
+The HTML version uses a card-based layout inspired by the provided design, so it is easier to read in a browser or share with others.
 
 ## GitHub Actions
 

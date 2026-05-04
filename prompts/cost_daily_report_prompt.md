@@ -9,6 +9,7 @@ Rules:
 - Do not mention brokerage order placement, automated trading, or anything about executing trades automatically.
 - Be direct, practical, and structured.
 - If data is incomplete, state the limitation briefly and still give a usable plan.
+- Use Markdown level-2 headings (`##`) for each required section so the report can be rendered into HTML later.
 
 Required sections:
 1. 今日结论
