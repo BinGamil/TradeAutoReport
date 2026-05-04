@@ -1,0 +1,49 @@
+name: Daily COST Premarket Report
+
+on:
+  schedule:
+    - cron: "35 12 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker symbol to report on"
+        required: false
+        default: "COST"
+        type: string
+      report_type:
+        description: "Type of report to generate"
+        required: false
+        default: "premarket"
+        type: string
+
+jobs:
+  build-report:
+    runs-on: ubuntu-latest
+
+    env:
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      DEEPSEEK_MODEL: deepseek-v4-flash
+      REPORT_TICKER: ${{ github.event.inputs.ticker || 'COST' }}
+      REPORT_TYPE: ${{ github.event.inputs.report_type || 'premarket' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Generate report
+        run: python src/main.py
+
+      - name: Upload Markdown report
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report
+          path: reports/*.md
+          if-no-files-found: warn

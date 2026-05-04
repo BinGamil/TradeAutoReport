@@ -3,16 +3,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+import sys
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 
-from .config import DEFAULT_PERIOD, DEFAULT_TICKER
-from .deepseek_report import generate_trading_report
-from .logger import get_logger
-from .market_data import get_price_history
-from .report_writer import save_markdown_report
-from .technicals import atr14, macd, moving_average, rsi14
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from src.config import DEFAULT_PERIOD, DEFAULT_TICKER
+    from src.deepseek_report import generate_trading_report
+    from src.logger import get_logger
+    from src.market_data import get_price_history
+    from src.report_writer import save_markdown_report
+    from src.technicals import atr14, macd, moving_average, rsi14
+else:
+    from .config import DEFAULT_PERIOD, DEFAULT_TICKER
+    from .deepseek_report import generate_trading_report
+    from .logger import get_logger
+    from .market_data import get_price_history
+    from .report_writer import save_markdown_report
+    from .technicals import atr14, macd, moving_average, rsi14
 
 logger = get_logger(__name__)
 
@@ -83,6 +95,18 @@ def build_summary(ticker: str = DEFAULT_TICKER, period: str = DEFAULT_PERIOD) ->
     return summary
 
 
+def _get_run_settings() -> tuple[str, str]:
+    """Read the ticker and report type from environment variables.
+
+    GitHub Actions can inject these values for scheduled and manual runs,
+    while local execution keeps the existing COST/premarket defaults.
+    """
+
+    ticker = os.getenv("REPORT_TICKER", DEFAULT_TICKER).strip() or DEFAULT_TICKER
+    report_type = os.getenv("REPORT_TYPE", "premarket").strip() or "premarket"
+    return ticker.upper(), report_type.lower()
+
+
 def print_summary(summary: ReportSummary) -> None:
     """Print a compact technical snapshot to stdout."""
 
@@ -110,7 +134,8 @@ def main() -> int:
     """Entry point used by the CLI and future automation jobs."""
 
     try:
-        summary = build_summary()
+        ticker, report_type = _get_run_settings()
+        summary = build_summary(ticker=ticker)
         market_summary = {
             "ticker": summary.ticker,
             "latest_close": summary.latest_close,
@@ -132,11 +157,11 @@ def main() -> int:
             ticker=summary.ticker,
             market_summary=market_summary,
             indicators=indicators,
-            report_type="premarket",
+            report_type=report_type,
         )
         report_path = save_markdown_report(
             ticker=summary.ticker,
-            report_type="premarket",
+            report_type=report_type,
             report=report,
         )
     except Exception as exc:  # pragma: no cover - top-level guard
