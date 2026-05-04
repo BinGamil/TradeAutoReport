@@ -2,7 +2,8 @@ name: Daily COST Premarket Report
 
 on:
   schedule:
-    - cron: "30 20 * * 1-5"
+    - cron: "30 16 * * 1-5"
+      timezone: "America/Toronto"
   workflow_dispatch:
     inputs:
       ticker:
