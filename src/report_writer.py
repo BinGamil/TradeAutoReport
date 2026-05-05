@@ -39,7 +39,7 @@ def save_markdown_report(ticker: str, report_type: str, report: str) -> str:
     """Save a generated report as Markdown and return the file path."""
 
     timestamp = datetime.now(REPORT_TZ)
-    reports_dir = PATHS.reports_dir
+    reports_dir = PATHS.markdown_reports_dir
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     file_name = _report_filename(ticker, report_type, timestamp)

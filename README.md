@@ -2,7 +2,7 @@
 
 Automated daily premarket stock trading report system.
 
-This project fetches daily market data for `COST` with `yfinance`, calculates technical indicators, generates a Markdown premarket report with DeepSeek, and can email the report through Gmail API. It is structured so we can later add Notion journal writing, news summaries, and multiple tickers.
+This project fetches daily market data for supported tickers such as `COST` and `MSFT` with `yfinance`, calculates technical indicators, generates a DeepSeek premarket report in both Markdown and HTML, and can send the latest HTML report by Gmail. It is structured so we can later add Notion journal writing, news summaries, and more tickers.
 
 Current features:
 
@@ -14,7 +14,11 @@ Current features:
 - MACD line, signal, and histogram
 - ATR14
 - DeepSeek-generated trading report with fallback behavior
-- Markdown report output under `reports/YYYY-MM-DD_COST_premarket.md`
+- Markdown report output under `report/markdown/YYYY-MM-DD_TICKER_premarket.md`
+- Single-ticker HTML output under `report/html/YYYY-MM-DD_TICKER_premarket.html`
+- Multi-ticker HTML output under `report/html/YYYY-MM-DD_COST_MSFT_premarket.html` with a symbol dropdown
+- Latest HTML duplicate output under `report/StockReportAnalysisToday.html`
+- Gmail delivery with `StockReportAnalysisToday.html` attached
 - GitHub Actions scheduled automation and manual dispatch support
 - Gmail API email delivery
 
@@ -41,7 +45,7 @@ Copy `.env.example` to `.env` and set:
 
 - `DEEPSEEK_API_KEY`
 - `DEEPSEEK_MODEL` if you want to override the default `deepseek-v4-flash`
-- `REPORT_TICKER` if you want to override the default `COST`
+- `REPORT_TICKER` if you want to choose symbols. Use `COST`, `MSFT`, `COST,MSFT`, or `ALL`
 - `REPORT_TYPE` if you want to override the default `premarket`
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
@@ -49,6 +53,7 @@ Copy `.env.example` to `.env` and set:
 - `GMAIL_SENDER`
 - `EMAIL_TO`
 - `OPENAI_API_KEY` and `OPENAI_MODEL` if you want an OpenAI backup path
+- `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER`, and `EMAIL_TO` if you want email delivery
 
 ## Run locally
 
@@ -60,7 +65,18 @@ python src/main.py
 
 You can also use `python -m src.main` if you prefer module execution.
 
-That will fetch at least one year of daily data for the selected ticker, calculate indicators, generate the DeepSeek report, and save the Markdown output under `reports/`. If DeepSeek is unavailable, the program tries OpenAI when `OPENAI_API_KEY` is set. If both fail or are missing, it falls back to a rule-based Chinese report.
+That will fetch at least one year of daily data for the selected ticker or ticker list, calculate indicators, generate the DeepSeek report, and save output under `report/`. Markdown files are saved per ticker under `report/markdown/`. HTML files are saved under `report/html/`. Every run also refreshes `report/StockReportAnalysisToday.html` with the newest HTML report. When multiple tickers are selected, HTML is saved as one combined dropdown page instead of separate HTML files. If DeepSeek is unavailable, the program tries OpenAI when `OPENAI_API_KEY` is set. If both fail or are missing, it falls back to a rule-based Chinese report.
+
+Examples:
+
+```bash
+REPORT_TICKER=COST python src/main.py
+REPORT_TICKER=MSFT python src/main.py
+REPORT_TICKER=COST,MSFT python src/main.py
+REPORT_TICKER=ALL python src/main.py
+```
+
+The HTML version uses a card-based layout inspired by the provided design. Multi-ticker runs reuse the already generated report text and do not make extra DeepSeek calls just to build the combined HTML page.
 
 If Gmail settings are present, the app also sends the generated report as a plain-text email. If email sending fails, the Markdown file is still kept and the program continues.
 
@@ -72,7 +88,7 @@ It runs automatically Monday through Friday at `4:30 PM America/Toronto` using G
 
 ### GitHub Secrets
 
-Add this secret in your repository settings:
+Add these secrets in your repository settings:
 
 - `DEEPSEEK_API_KEY`
 - `GMAIL_CLIENT_ID`
@@ -81,20 +97,23 @@ Add this secret in your repository settings:
 - `GMAIL_SENDER`
 - `EMAIL_TO`
 
+If Gmail secrets are missing, the workflow still generates report files and skips email delivery.
+
 Optional repository variables or workflow env values:
 
 - `DEEPSEEK_MODEL` defaults to `deepseek-v4-flash`
-- `REPORT_TICKER` defaults to `COST`
+- `REPORT_TICKER` defaults to `ALL` in GitHub Actions and generates every configured ticker
 - `REPORT_TYPE` defaults to `premarket`
 
 ### Manual trigger
 
 Use the `workflow_dispatch` button in GitHub Actions and provide:
 
-- `ticker` defaults to `COST`
+- `ticker` defaults to `ALL`
+- `ticker` accepts `COST`, `MSFT`, `COST,MSFT`, or `ALL`
 - `report_type` defaults to `premarket`
 
-The workflow installs dependencies, runs `python src/main.py`, and uploads any generated Markdown files from `reports/` as artifacts.
+The workflow installs dependencies, runs `python src/main.py`, sends the latest HTML report by Gmail when Gmail secrets are configured, and uploads generated Markdown and HTML files from `report/` as artifacts.
 
 ## Gmail Setup
 
@@ -114,4 +133,4 @@ The app uses the refresh token flow to obtain a short-lived access token, then c
 ## Notes
 
 - Generated reports are not committed automatically.
-- Gmail, Notion, and news summaries will come in later phases.
+- Notion and news summaries will come in later phases.

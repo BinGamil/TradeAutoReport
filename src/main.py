@@ -5,27 +5,29 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 import os
+import re
 import sys
 from pathlib import Path
-from typing import Optional
-from zoneinfo import ZoneInfo
+from typing import Any, Optional
 
 import pandas as pd
 from dotenv import load_dotenv
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from src.config import DEFAULT_PERIOD, DEFAULT_TICKER
-    from src.email_sender import send_report_email
+    from src.config import DEFAULT_PERIOD, DEFAULT_TICKER, PATHS, SUPPORTED_TICKERS
     from src.deepseek_report import generate_trading_report
+    from src.email_sender import send_report_email
+    from src.html_report import save_combined_html_report, save_html_report
     from src.logger import get_logger
     from src.market_data import get_price_history
     from src.report_writer import save_markdown_report
     from src.technicals import atr14, macd, moving_average, rsi14
 else:
-    from .config import DEFAULT_PERIOD, DEFAULT_TICKER
-    from .email_sender import send_report_email
+    from .config import DEFAULT_PERIOD, DEFAULT_TICKER, PATHS, SUPPORTED_TICKERS
     from .deepseek_report import generate_trading_report
+    from .email_sender import send_report_email
+    from .html_report import save_combined_html_report, save_html_report
     from .logger import get_logger
     from .market_data import get_price_history
     from .report_writer import save_markdown_report
@@ -33,6 +35,10 @@ else:
 
 logger = get_logger(__name__)
 TORONTO_TZ = ZoneInfo("America/Toronto")
+
+TICKER_PATTERN = re.compile(r"^[A-Z][A-Z0-9.-]{0,9}$")
+
+load_dotenv(PATHS.root / ".env")
 
 
 @dataclass
@@ -101,16 +107,81 @@ def build_summary(ticker: str = DEFAULT_TICKER, period: str = DEFAULT_PERIOD) ->
     return summary
 
 
-def _get_run_settings() -> tuple[str, str]:
-    """Read the ticker and report type from environment variables.
+def _parse_tickers(raw_value: str | None) -> list[str]:
+    """Read one or more ticker symbols from an environment value."""
+
+    value = (raw_value or DEFAULT_TICKER).strip()
+    if not value:
+        return [DEFAULT_TICKER]
+
+    if value.upper() == "ALL":
+        return list(SUPPORTED_TICKERS)
+
+    tickers: list[str] = []
+    for part in value.replace(";", ",").split(","):
+        ticker = part.strip().upper()
+        if not ticker:
+            continue
+        if not TICKER_PATTERN.match(ticker):
+            raise ValueError(f"Invalid ticker symbol: {ticker}")
+        if ticker not in tickers:
+            tickers.append(ticker)
+
+    return tickers or [DEFAULT_TICKER]
+
+
+def _get_run_settings() -> tuple[list[str], str]:
+    """Read ticker symbols and report type from environment variables.
 
     GitHub Actions can inject these values for scheduled and manual runs,
     while local execution keeps the existing COST/premarket defaults.
     """
 
-    ticker = os.getenv("REPORT_TICKER", DEFAULT_TICKER).strip() or DEFAULT_TICKER
+    ticker_value = os.getenv("REPORT_TICKERS") or os.getenv("REPORT_TICKER") or DEFAULT_TICKER
+    tickers = _parse_tickers(ticker_value)
     report_type = os.getenv("REPORT_TYPE", "premarket").strip() or "premarket"
-    return ticker.upper(), report_type.lower()
+    return tickers, report_type.lower()
+
+
+def _build_email_body(report_paths: list[str], html_paths: list[str]) -> str:
+    """Build an email body from the generated Markdown report files."""
+
+    sections: list[str] = [
+        "Generated premarket trading report.",
+        "",
+        "The latest HTML report is attached as StockReportAnalysisToday.html.",
+        "",
+    ]
+
+    for index, report_path in enumerate(report_paths, start=1):
+        path = Path(report_path)
+        sections.extend(
+            [
+                "=" * 72,
+                f"Markdown Report {index}: {path.name}",
+                "=" * 72,
+                "",
+            ]
+        )
+        try:
+            sections.append(path.read_text(encoding="utf-8").strip())
+        except Exception as exc:
+            logger.exception("Unable to read Markdown report for email body: %s", exc)
+            sections.append(f"Unable to read Markdown report body from {path}")
+        sections.append("")
+
+    if html_paths:
+        sections.extend(
+            [
+                "=" * 72,
+                "HTML Attachment",
+                "=" * 72,
+                *[Path(path).name for path in html_paths],
+                "",
+            ]
+        )
+
+    return "\n".join(sections).strip() + "\n"
 
 
 def print_summary(summary: ReportSummary) -> None:
@@ -139,50 +210,112 @@ def print_summary(summary: ReportSummary) -> None:
 def main() -> int:
     """Entry point used by the CLI and future automation jobs."""
 
-    load_dotenv()
+    report_paths: list[str] = []
+    html_paths: list[str] = []
+    html_report_items: list[dict[str, Any]] = []
+    generated_tickers: list[str] = []
+    failed_tickers: list[str] = []
 
     try:
-        ticker, report_type = _get_run_settings()
-        summary = build_summary(ticker=ticker)
-        market_summary = {
-            "ticker": summary.ticker,
-            "latest_close": summary.latest_close,
-            "previous_close": summary.previous_close,
-            "daily_percent_change": summary.daily_percent_change,
-        }
-        indicators = {
-            "ma5": summary.ma5,
-            "ma20": summary.ma20,
-            "ma50": summary.ma50,
-            "ma200": summary.ma200,
-            "rsi14": summary.rsi14,
-            "macd_line": summary.macd_line,
-            "macd_signal": summary.macd_signal,
-            "macd_histogram": summary.macd_histogram,
-            "atr14": summary.atr14,
-        }
-        report = generate_trading_report(
-            ticker=summary.ticker,
-            market_summary=market_summary,
-            indicators=indicators,
-            report_type=report_type,
-        )
-        report_path = save_markdown_report(
-            ticker=summary.ticker,
-            report_type=report_type,
-            report=report,
-        )
-        email_subject = f"{summary.ticker} Premarket Trading Plan - {datetime.now(TORONTO_TZ):%Y-%m-%d}"
-        try:
-            send_report_email(subject=email_subject, body=report)
-        except Exception:
-            logger.exception("Email delivery failed; keeping the saved Markdown report.")
+        tickers, report_type = _get_run_settings()
     except Exception as exc:  # pragma: no cover - top-level guard
-        logger.exception("Unable to build report summary: %s", exc)
+        logger.exception("Unable to read run settings: %s", exc)
         return 1
 
-    print(report)
-    print(f"\nSaved report: {report_path}")
+    for ticker in tickers:
+        try:
+            summary = build_summary(ticker=ticker)
+            market_summary = {
+                "ticker": summary.ticker,
+                "latest_close": summary.latest_close,
+                "previous_close": summary.previous_close,
+                "daily_percent_change": summary.daily_percent_change,
+            }
+            indicators = {
+                "ma5": summary.ma5,
+                "ma20": summary.ma20,
+                "ma50": summary.ma50,
+                "ma200": summary.ma200,
+                "rsi14": summary.rsi14,
+                "macd_line": summary.macd_line,
+                "macd_signal": summary.macd_signal,
+                "macd_histogram": summary.macd_histogram,
+                "atr14": summary.atr14,
+            }
+            report = generate_trading_report(
+                ticker=summary.ticker,
+                market_summary=market_summary,
+                indicators=indicators,
+                report_type=report_type,
+            )
+            report_path = save_markdown_report(
+                ticker=summary.ticker,
+                report_type=report_type,
+                report=report,
+            )
+            generated_tickers.append(summary.ticker)
+            report_paths.append(report_path)
+            html_report_items.append(
+                {
+                    "ticker": summary.ticker,
+                    "report": report,
+                    "market_summary": market_summary,
+                    "indicators": indicators,
+                }
+            )
+        except Exception as exc:  # pragma: no cover - top-level guard
+            failed_tickers.append(ticker)
+            logger.exception("Unable to build report for %s: %s", ticker, exc)
+            continue
+
+    if not report_paths:
+        logger.error("No reports were generated.")
+        return 1
+
+    try:
+        if len(html_report_items) == 1:
+            item = html_report_items[0]
+            html_paths.append(
+                save_html_report(
+                    ticker=str(item["ticker"]),
+                    report_type=report_type,
+                    report=str(item["report"]),
+                    market_summary=item["market_summary"],
+                    indicators=item["indicators"],
+                )
+            )
+        else:
+            html_paths.append(
+                save_combined_html_report(
+                    reports=html_report_items,
+                    report_type=report_type,
+                )
+            )
+    except Exception:
+        logger.exception("Unable to write HTML report; keeping the Markdown reports.")
+
+    try:
+        date_label = pd.Timestamp.now(tz="America/Toronto").strftime("%Y-%m-%d")
+        ticker_label = ", ".join(generated_tickers)
+        subject = f"{ticker_label} Premarket Trading Plan - {date_label}"
+        email_body = _build_email_body(report_paths, html_paths)
+        send_report_email(
+            subject=subject,
+            body=email_body,
+            attachment_path=PATHS.today_html_report_path if html_paths else None,
+        )
+    except Exception:
+        logger.exception("Unable to send report email; generated report files were kept.")
+
+    print("\nGenerated Markdown reports:")
+    for path in report_paths:
+        print(f"- {path}")
+    if html_paths:
+        print("\nGenerated HTML reports:")
+        for path in html_paths:
+            print(f"- {path}")
+    if failed_tickers:
+        print(f"\nSkipped failed tickers: {', '.join(failed_tickers)}")
     return 0
 
 
