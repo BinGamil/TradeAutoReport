@@ -9,6 +9,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 from dotenv import load_dotenv
