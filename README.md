@@ -133,4 +133,5 @@ The app uses the refresh token flow to obtain a short-lived access token, then c
 ## Notes
 
 - Generated reports are not committed automatically.
+- Test feature branch workflows with `workflow_dispatch` before merging to `main`.
 - Notion and news summaries will come in later phases.
