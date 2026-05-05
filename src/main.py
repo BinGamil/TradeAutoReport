@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 import os
 import re
 import sys
@@ -33,6 +34,7 @@ else:
     from .technicals import atr14, macd, moving_average, rsi14
 
 logger = get_logger(__name__)
+TORONTO_TZ = ZoneInfo("America/Toronto")
 
 TICKER_PATTERN = re.compile(r"^[A-Z][A-Z0-9.-]{0,9}$")
 

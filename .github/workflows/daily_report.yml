@@ -2,7 +2,8 @@ name: Daily Stock Premarket Report
 
 on:
   schedule:
-    - cron: "35 12 * * 1-5"
+    - cron: "45 16 * * 1-5"
+      timezone: "America/Toronto"
   workflow_dispatch:
     inputs:
       ticker:
