@@ -16,6 +16,14 @@ logger = get_logger(__name__)
 REPORT_TZ = ZoneInfo("America/Toronto")
 
 
+def _write_html_files(file_path, content: str) -> None:
+    """Write the timestamped HTML and refresh the stable today copy."""
+
+    file_path.write_text(content, encoding="utf-8")
+    PATHS.report_dir.mkdir(parents=True, exist_ok=True)
+    PATHS.today_html_report_path.write_text(content, encoding="utf-8")
+
+
 def _as_float(value: Any) -> float | None:
     try:
         if value is None:
@@ -331,6 +339,196 @@ ul {{ margin:10px 0 0 20px; padding:0; }}
     return html_document
 
 
+def _build_report_panel(
+    ticker: str,
+    report_type: str,
+    report: str,
+    market_summary: dict[str, Any],
+    indicators: dict[str, Any],
+    generated_at: datetime,
+    active: bool,
+) -> str:
+    sections = _parse_sections(report)
+    first_section_body = sections[0][1] if sections else ""
+    headline = _first_nonempty_line(first_section_body) or _first_nonempty_line(report) or "DeepSeek Trading Report"
+    stance, stance_class = _derive_stance(market_summary, indicators)
+    section_cards = _build_sections(sections)
+
+    summary_html = _render_body(
+        (
+            f"{headline}\n\n"
+            f"报告类型：{report_type}\n"
+            f"生成时间：{generated_at.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+            f"当前结论：{stance}\n"
+        )
+    )
+    technical_summary_lines = [
+        f"收盘价 { _fmt_price(market_summary.get('latest_close')) }，前收盘 { _fmt_price(market_summary.get('previous_close')) }。",
+        f"日涨跌幅 {_fmt_pct(market_summary.get('daily_percent_change'))}。",
+        f"MA20 {_fmt_price(indicators.get('ma20'))}，MA50 {_fmt_price(indicators.get('ma50'))}，MA200 {_fmt_price(indicators.get('ma200'))}。",
+        f"RSI14 {_fmt_number(indicators.get('rsi14'))}，ATR14 {_fmt_price(indicators.get('atr14'))}。",
+    ]
+    hidden_attr = "" if active else " hidden"
+
+    return f"""
+    <article class="ticker-panel" data-ticker="{escape(ticker.upper())}"{hidden_attr}>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="brand">DeepSeek HTML Report</span>
+          <span class="pill {stance_class}">{escape(stance)}</span>
+        </div>
+        <div class="toolbar-right">
+          <span class="tool-chip">{escape(ticker.upper())}</span>
+          <span class="tool-chip">{escape(report_type)}</span>
+        </div>
+      </div>
+
+      <div class="hero">
+        <h1>{escape(ticker.upper())} 深度盘前报告</h1>
+        <p>{escape(_fmt_text(headline))}</p>
+        <p class="muted">生成时间：{escape(generated_at.strftime('%Y-%m-%d %H:%M:%S %Z'))}</p>
+      </div>
+
+      <div class="summary">{summary_html}</div>
+
+      <section>
+        <h2>关键指标</h2>
+        <div class="grid">{_build_metric_cards(market_summary, indicators)}</div>
+      </section>
+
+      <section>
+        <h2>技术概览</h2>
+        <div class="columns">
+          {_build_indicator_cards(indicators)}
+          <div class="card">
+            <h3>盘前摘要</h3>
+            <p>{escape(' '.join(technical_summary_lines))}</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepSeek 分析</h2>
+        <div class="plan-grid">{section_cards}</div>
+      </section>
+    </article>
+    """
+
+
+def build_combined_html_report(
+    reports: list[dict[str, Any]],
+    report_type: str,
+    generated_at: datetime | None = None,
+) -> str:
+    """Build one HTML file with a ticker dropdown and pre-rendered report panels."""
+
+    generated_at = generated_at or datetime.now(REPORT_TZ)
+    panels = "".join(
+        _build_report_panel(
+            ticker=str(item["ticker"]),
+            report_type=report_type,
+            report=str(item["report"]),
+            market_summary=item["market_summary"],
+            indicators=item["indicators"],
+            generated_at=generated_at,
+            active=index == 0,
+        )
+        for index, item in enumerate(reports)
+    )
+    options = "".join(
+        f'<option value="{escape(str(item["ticker"]).upper())}">{escape(str(item["ticker"]).upper())}</option>'
+        for item in reports
+    )
+    tickers_label = " / ".join(str(item["ticker"]).upper() for item in reports)
+
+    html_document = f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{escape(tickers_label)} {escape(report_type.title())} Report</title>
+<style>
+:root {{
+  --ink:#1f2937;
+  --muted:#5b6472;
+  --accent:#123b45;
+  --line:#d6dde3;
+  --good:#0f766e;
+  --warn:#b45309;
+  --bad:#b91c1c;
+  --bg:#f6f1e8;
+  --card:#ffffff;
+}}
+* {{ box-sizing:border-box; }}
+body {{ margin:0; font:16px/1.55 Arial, sans-serif; background:linear-gradient(180deg,#f6f1e8 0%,#f8fafc 100%); color:var(--ink); }}
+.main {{ max-width:1120px; margin:0 auto; padding:32px 24px 72px; }}
+.symbol-picker {{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:22px; padding:14px 16px; background:rgba(255,255,255,.78); border:1px solid var(--line); border-radius:12px; }}
+.symbol-picker label {{ color:var(--muted); font-size:14px; font-weight:700; }}
+select {{ appearance:none; min-width:180px; border:1px solid var(--line); border-radius:10px; padding:10px 38px 10px 14px; font:700 15px Arial,sans-serif; color:#14213d; background:#fff; }}
+.picker-meta {{ color:var(--muted); font-size:13px; }}
+.toolbar {{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:18px; }}
+.toolbar-left, .toolbar-right {{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }}
+.brand {{ font-weight:700; color:#14213d; letter-spacing:.02em; }}
+.tool-chip {{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; color:#19324d; font-size:13px; font-weight:700; }}
+.hero {{ border-left:8px solid var(--good); padding:8px 0 8px 24px; margin-bottom:28px; }}
+.hero h1 {{ margin:0 0 8px; font-size:40px; line-height:1.1; color:#14213d; }}
+.hero p {{ margin:6px 0; color:var(--muted); }}
+.summary {{ background:rgba(255,255,255,.74); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0 28px; }}
+.grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:18px 0 28px; }}
+.columns {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }}
+.plan-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }}
+.card, .plan-card {{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 10px 24px rgba(18,59,69,.06); }}
+.metric-card .value {{ font-size:30px; font-weight:700; color:#14213d; }}
+.card .label {{ color:var(--muted); font-size:13px; margin-bottom:8px; }}
+.card .value {{ color:#14213d; }}
+section {{ margin:28px 0; }}
+section h2 {{ margin:0 0 14px; font-size:24px; color:#14213d; }}
+section h3 {{ margin:18px 0 10px; font-size:18px; color:#19324d; }}
+.plan-card h3 {{ margin:0 0 8px; }}
+.plan-meta {{ display:inline-block; margin-bottom:12px; padding:5px 10px; border-radius:999px; background:#e8eef5; color:#19324d; font-size:12px; font-weight:700; }}
+.plan-card p {{ margin:10px 0; }}
+ul {{ margin:10px 0 0 20px; padding:0; }}
+.pill {{ display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; background:#e7f4ef; color:#0f766e; }}
+.pill.neutral {{ background:#fff4df; color:#b45309; }}
+.pill.bad {{ background:#fde8e8; color:#b91c1c; }}
+.pill.good {{ background:#e7f4ef; color:#0f766e; }}
+.muted {{ color:var(--muted); }}
+.footer {{ margin-top:38px; font-size:13px; color:var(--muted); }}
+[hidden] {{ display:none !important; }}
+@media (max-width: 640px) {{
+  .hero h1 {{ font-size:30px; }}
+  .symbol-picker {{ align-items:stretch; }}
+  select {{ width:100%; }}
+}}
+</style>
+</head>
+<body>
+<div class="main">
+  <div class="symbol-picker">
+    <div>
+      <label for="tickerSelect">股票代码</label>
+      <div class="picker-meta">选择一个 symbol 查看对应盘前计划</div>
+    </div>
+    <select id="tickerSelect">{options}</select>
+  </div>
+  {panels}
+  <div class="footer">本报告由 DeepSeek 生成，并以单页 HTML 方式呈现。切换 symbol 不会触发新的 DeepSeek 调用。</div>
+</div>
+<script>
+const tickerSelect = document.getElementById('tickerSelect');
+const panels = Array.from(document.querySelectorAll('.ticker-panel'));
+tickerSelect.addEventListener('change', () => {{
+  panels.forEach(panel => {{
+    panel.hidden = panel.dataset.ticker !== tickerSelect.value;
+  }});
+}});
+</script>
+</body>
+</html>
+"""
+    return html_document
+
+
 def save_html_report(
     ticker: str,
     report_type: str,
@@ -341,7 +539,7 @@ def save_html_report(
     """Save the HTML report next to the Markdown version."""
 
     timestamp = datetime.now(REPORT_TZ)
-    reports_dir = PATHS.reports_dir
+    reports_dir = PATHS.html_reports_dir
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     file_name = f"{timestamp:%Y-%m-%d}_{ticker.upper()}_{report_type.strip().lower().replace(' ', '_')}.html"
@@ -356,9 +554,38 @@ def save_html_report(
     )
 
     try:
-        file_path.write_text(content, encoding="utf-8")
+        _write_html_files(file_path, content)
     except Exception as exc:  # pragma: no cover - filesystem variability
         logger.exception("Failed to write HTML report %s: %s", file_path, exc)
+        raise
+
+    return str(file_path)
+
+
+def save_combined_html_report(
+    reports: list[dict[str, Any]],
+    report_type: str,
+) -> str:
+    """Save one dropdown-based HTML report for multiple ticker reports."""
+
+    timestamp = datetime.now(REPORT_TZ)
+    reports_dir = PATHS.html_reports_dir
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_report_type = report_type.strip().lower().replace(" ", "_")
+    ticker_part = "_".join(str(item["ticker"]).upper() for item in reports)
+    file_name = f"{timestamp:%Y-%m-%d}_{ticker_part}_{safe_report_type}.html"
+    file_path = reports_dir / file_name
+    content = build_combined_html_report(
+        reports=reports,
+        report_type=report_type,
+        generated_at=timestamp,
+    )
+
+    try:
+        _write_html_files(file_path, content)
+    except Exception as exc:  # pragma: no cover - filesystem variability
+        logger.exception("Failed to write combined HTML report %s: %s", file_path, exc)
         raise
 
     return str(file_path)
