@@ -368,10 +368,11 @@ def _build_report_panel(
         f"MA20 {_fmt_price(indicators.get('ma20'))}，MA50 {_fmt_price(indicators.get('ma50'))}，MA200 {_fmt_price(indicators.get('ma200'))}。",
         f"RSI14 {_fmt_number(indicators.get('rsi14'))}，ATR14 {_fmt_price(indicators.get('atr14'))}。",
     ]
-    hidden_attr = "" if active else " hidden"
+    active_class = " is-active" if active else ""
+    safe_ticker = escape(ticker.upper())
 
     return f"""
-    <article class="ticker-panel" data-ticker="{escape(ticker.upper())}"{hidden_attr}>
+    <article id="ticker-{safe_ticker}" class="ticker-panel{active_class}" data-ticker="{safe_ticker}">
       <div class="toolbar">
         <div class="toolbar-left">
           <span class="brand">DeepSeek HTML Report</span>
@@ -439,6 +440,10 @@ def build_combined_html_report(
         f'<option value="{escape(str(item["ticker"]).upper())}">{escape(str(item["ticker"]).upper())}</option>'
         for item in reports
     )
+    ticker_links = "".join(
+        f'<a class="ticker-link" href="#ticker-{escape(str(item["ticker"]).upper())}" data-ticker="{escape(str(item["ticker"]).upper())}">{escape(str(item["ticker"]).upper())}</a>'
+        for item in reports
+    )
     tickers_label = " / ".join(str(item["ticker"]).upper() for item in reports)
 
     html_document = f"""<!doctype html>
@@ -466,6 +471,10 @@ body {{ margin:0; font:16px/1.55 Arial, sans-serif; background:linear-gradient(1
 .symbol-picker label {{ color:var(--muted); font-size:14px; font-weight:700; }}
 select {{ appearance:none; min-width:180px; border:1px solid var(--line); border-radius:10px; padding:10px 38px 10px 14px; font:700 15px Arial,sans-serif; color:#14213d; background:#fff; }}
 .picker-meta {{ color:var(--muted); font-size:13px; }}
+.ticker-links {{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }}
+.ticker-link {{ display:inline-flex; align-items:center; border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; color:#19324d; font-size:13px; font-weight:700; text-decoration:none; }}
+.ticker-link:hover {{ text-decoration:underline; }}
+.ticker-link.is-active {{ background:#e7f4ef; color:#0f766e; border-color:#a9d8c8; }}
 .toolbar {{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:18px; }}
 .toolbar-left, .toolbar-right {{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }}
 .brand {{ font-weight:700; color:#14213d; letter-spacing:.02em; }}
@@ -494,7 +503,8 @@ ul {{ margin:10px 0 0 20px; padding:0; }}
 .pill.good {{ background:#e7f4ef; color:#0f766e; }}
 .muted {{ color:var(--muted); }}
 .footer {{ margin-top:38px; font-size:13px; color:var(--muted); }}
-[hidden] {{ display:none !important; }}
+html.js-enabled .ticker-panel {{ display:none; }}
+html.js-enabled .ticker-panel.is-active {{ display:block; }}
 @media (max-width: 640px) {{
   .hero h1 {{ font-size:30px; }}
   .symbol-picker {{ align-items:stretch; }}
@@ -507,7 +517,8 @@ ul {{ margin:10px 0 0 20px; padding:0; }}
   <div class="symbol-picker">
     <div>
       <label for="tickerSelect">股票代码</label>
-      <div class="picker-meta">选择一个 symbol 查看对应盘前计划</div>
+      <div class="picker-meta">选择 symbol 查看对应盘前计划；手机预览不切换时可点下方代码跳转</div>
+      <div class="ticker-links">{ticker_links}</div>
     </div>
     <select id="tickerSelect">{options}</select>
   </div>
@@ -515,13 +526,35 @@ ul {{ margin:10px 0 0 20px; padding:0; }}
   <div class="footer">本报告由 DeepSeek 生成，并以单页 HTML 方式呈现。切换 symbol 不会触发新的 DeepSeek 调用。</div>
 </div>
 <script>
+document.documentElement.classList.add('js-enabled');
 const tickerSelect = document.getElementById('tickerSelect');
 const panels = Array.from(document.querySelectorAll('.ticker-panel'));
-tickerSelect.addEventListener('change', () => {{
+const links = Array.from(document.querySelectorAll('.ticker-link'));
+function showTicker(ticker) {{
   panels.forEach(panel => {{
-    panel.hidden = panel.dataset.ticker !== tickerSelect.value;
+    panel.classList.toggle('is-active', panel.dataset.ticker === ticker);
+  }});
+  links.forEach(link => {{
+    link.classList.toggle('is-active', link.dataset.ticker === ticker);
+  }});
+  tickerSelect.value = ticker;
+}}
+tickerSelect.addEventListener('change', () => {{
+  showTicker(tickerSelect.value);
+}});
+links.forEach(link => {{
+  link.addEventListener('click', event => {{
+    event.preventDefault();
+    showTicker(link.dataset.ticker);
+    history.replaceState(null, '', link.getAttribute('href'));
   }});
 }});
+const initialTicker = location.hash.replace('#ticker-', '');
+if (initialTicker && panels.some(panel => panel.dataset.ticker === initialTicker)) {{
+  showTicker(initialTicker);
+}} else {{
+  showTicker(tickerSelect.value);
+}}
 </script>
 </body>
 </html>
