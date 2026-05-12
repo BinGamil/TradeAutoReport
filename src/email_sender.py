@@ -18,6 +18,26 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 GMAIL_SEND_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
 
 
+def _google_error_message(response: requests.Response, fallback: str) -> str:
+    """Return a safe, readable Google API error without exposing credentials."""
+
+    try:
+        payload = response.json()
+    except ValueError:
+        return fallback
+
+    error = payload.get("error")
+    description = payload.get("error_description")
+    if isinstance(error, dict):
+        message = error.get("message")
+        status = error.get("status")
+        details = " ".join(str(item) for item in (status, message) if item)
+        return details or fallback
+
+    details = " ".join(str(item) for item in (error, description) if item)
+    return details or fallback
+
+
 def _split_recipients(value: str) -> list[str]:
     return [item.strip() for item in value.replace(";", ",").split(",") if item.strip()]
 
@@ -49,7 +69,10 @@ def _get_access_token(env_values: dict[str, str]) -> str:
         },
         timeout=30,
     )
-    response.raise_for_status()
+    if not response.ok:
+        details = _google_error_message(response, response.reason)
+        raise RuntimeError(f"Gmail OAuth token refresh failed: {details}")
+
     payload = response.json()
     access_token = payload.get("access_token")
     if not access_token:
@@ -125,5 +148,8 @@ def send_report_email(subject: str, body: str, attachment_path: str | Path | Non
         json={"raw": raw_message},
         timeout=30,
     )
-    response.raise_for_status()
+    if not response.ok:
+        details = _google_error_message(response, response.reason)
+        raise RuntimeError(f"Gmail send failed: {details}")
+
     logger.info("Report email sent to %s.", ", ".join(recipients))
