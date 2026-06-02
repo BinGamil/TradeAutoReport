@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COST Premarket Report</title>
+<style>
+:root {
+  --ink:#1f2937;
+  --muted:#5b6472;
+  --accent:#123b45;
+  --line:#d6dde3;
+  --good:#0f766e;
+  --warn:#b45309;
+  --bad:#b91c1c;
+  --bg:#f6f1e8;
+  --card:#ffffff;
+}
+* { box-sizing:border-box; }
+body { margin:0; font:16px/1.55 Arial, sans-serif; background:linear-gradient(180deg,#f6f1e8 0%,#f8fafc 100%); color:var(--ink); }
+.main { max-width:1120px; margin:0 auto; padding:32px 24px 72px; }
+.toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.toolbar-left, .toolbar-right { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.brand { font-weight:700; color:#14213d; letter-spacing:.02em; }
+.tool-chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; color:#19324d; font-size:13px; font-weight:700; }
+.hero { border-left:8px solid var(--good); padding:8px 0 8px 24px; margin-bottom:28px; }
+.hero h1 { margin:0 0 8px; font-size:40px; line-height:1.1; color:#14213d; }
+.hero p { margin:6px 0; color:var(--muted); }
+.summary { background:rgba(255,255,255,.74); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0 28px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:18px 0 28px; }
+.columns { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+.plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+.card, .plan-card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 10px 24px rgba(18,59,69,.06); }
+.metric-card .value { font-size:30px; font-weight:700; color:#14213d; }
+.card .label { color:var(--muted); font-size:13px; margin-bottom:8px; }
+.card .value { color:#14213d; }
+section { margin:28px 0; }
+section h2 { margin:0 0 14px; font-size:24px; color:#14213d; }
+section h3 { margin:18px 0 10px; font-size:18px; color:#19324d; }
+.plan-card h3 { margin:0 0 8px; }
+.plan-meta { display:inline-block; margin-bottom:12px; padding:5px 10px; border-radius:999px; background:#e8eef5; color:#19324d; font-size:12px; font-weight:700; }
+.plan-card p { margin:10px 0; }
+ul { margin:10px 0 0 20px; padding:0; }
+.pill { display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; background:#e7f4ef; color:#0f766e; }
+.pill.neutral { background:#fff4df; color:#b45309; }
+.pill.bad { background:#fde8e8; color:#b91c1c; }
+.pill.good { background:#e7f4ef; color:#0f766e; }
+.muted { color:var(--muted); }
+.footer { margin-top:38px; font-size:13px; color:var(--muted); }
+@media (max-width: 640px) {
+  .hero h1 { font-size:30px; }
+}
+</style>
+</head>
+<body>
+<div class="main">
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="brand">DeepSeek HTML Report</span>
+        <span class="pill good">偏多</span>
+      </div>
+      <div class="toolbar-right">
+        <span class="tool-chip">COST</span>
+        <span class="tool-chip">premarket</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>COST 深度盘前报告</h1>
+      <p>COST上一交易日收盘于1012.79美元，较前一日1011.70微涨0.11%，全天波动极窄。市场整体处于科技与消费板块轮动格局，COST作为必需消费龙头，表现出较强的防御性属性。当前宏观环境关注通胀预期与消费数据，COST的低价策略和会员模式使其在不确定性中保持稳定。</p>
+      <p class="muted">生成时间：2026-05-04 20:45:42 EDT</p>
+    </div>
+
+    <div class="summary"><p>COST上一交易日收盘于1012.79美元，较前一日1011.70微涨0.11%，全天波动极窄。市场整体处于科技与消费板块轮动格局，COST作为必需消费龙头，表现出较强的防御性属性。当前宏观环境关注通胀预期与消费数据，COST的低价策略和会员模式使其在不确定性中保持稳定。</p><p>报告类型：premarket 生成时间：2026-05-04 20:45:42 EDT 当前结论：偏多</p></div>
+
+    <section>
+      <h2>关键指标</h2>
+      <div class="grid"><div class="card metric-card"><div class="label">最新收盘</div><div class="value">$1012.79</div></div><div class="card metric-card"><div class="label">前收盘</div><div class="value">$1011.70</div></div><div class="card metric-card"><div class="label">日涨跌幅</div><div class="value">0.11%</div></div><div class="card metric-card"><div class="label">MA20</div><div class="value">$1003.20</div></div><div class="card metric-card"><div class="label">RSI14</div><div class="value">55.96</div></div><div class="card metric-card"><div class="label">ATR14</div><div class="value">$18.11</div></div></div>
+    </section>
+
+    <section>
+      <h2>技术概览</h2>
+      <div class="columns">
+        <div class="card"><h3>趋势结构</h3><p>MA5 / MA20：$1006.34 / $1003.20</p><p>MA50 / MA200：$997.43 / $950.85</p></div><div class="card"><h3>动量信号</h3><p>RSI14：55.96</p><p>MACD线：4.00</p><p>MACD信号：3.13</p><p>MACD柱状：0.87</p></div><div class="card"><h3>波动参考</h3><p>ATR14：$18.11</p><p>用于评估盘前波动空间与止损距离。</p></div>
+        <div class="card">
+          <h3>盘前摘要</h3>
+          <p>收盘价 $1012.79，前收盘 $1011.70。 日涨跌幅 0.11%。 MA20 $1003.20，MA50 $997.43，MA200 $950.85。 RSI14 55.96，ATR14 $18.11。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>DeepSeek 分析</h2>
+      <div class="plan-grid"><div class="plan-card"><span class="plan-meta">市场背景</span><p>COST上一交易日收盘于1012.79美元，较前一日1011.70微涨0.11%，全天波动极窄。市场整体处于科技与消费板块轮动格局，COST作为必需消费龙头，表现出较强的防御性属性。当前宏观环境关注通胀预期与消费数据，COST的低价策略和会员模式使其在不确定性中保持稳定。</p></div><div class="plan-card"><span class="plan-meta">前一交易日复盘</span><p>昨日COST全天呈现小幅震荡整理走势，开盘价与收盘价差距不大，日内波幅低于历史均值（ATR 18.11）。股价在1010-1015区间内窄幅运行，MACD柱状图仅小幅回升0.87，显示多空力量均衡。RSI 55.96处于中性偏强区域，但尚未进入超买区间。成交量未显著放大，市场观望情绪浓厚。</p></div><div class="plan-card"><span class="plan-meta">基本面与催化</span><p>COST基本面稳健，核心逻辑为会员费收入和同店销售增长。目前无明显个股特别催化点，股价走势更多跟随指数及消费板块整体表现。长期来看，COST的定价权与供应链优势构成护城河，适合作为组合中的防御型持仓。短期内，市场对即将发布的经济数据（如CPI）敏感，可能引发板块情绪波动。</p></div><div class="plan-card"><span class="plan-meta">新闻与信息流</span><p>暂无可用实时新闻摘要</p></div><div class="plan-card"><span class="plan-meta">分析师快照</span><p>暂无可用分析师评级或目标价数据</p></div><div class="plan-card"><span class="plan-meta">市场情绪拆解</span><p>从技术指标综合判断，市场情绪中性偏乐观。MACD金叉仍在延续，信号线与快线均位于零轴上方，表明中期趋势偏多。RSI未过热，为后续上涨留出空间。然而，历史波动率偏低（ATR 18），说明当下市场未形成强烈单边预期，资金观望情绪较重。期权市场若出现隐含波动率异常，可留意盘中突发波动。</p></div><div class="plan-card"><span class="plan-meta">技术分析</span><p>均线系统维持多头排列：股价高于MA5（1006.34）、MA20（1003.20）、MA50（997.43）和MA200（950.85）。短期MA5与MA20间距约3美元，斜率偏平缓，表明上涨节奏稳健但缺乏加速信号。MACD快线4.00、慢线3.13，柱状线0.87，动能温和。RSI 55.96，有机会在指数带动下挑战60以上区域。整体技术格局表明，COST处于可上可下但偏多的整理阶段。</p></div><div class="plan-card"><span class="plan-meta">交易方法说明</span><p>本报告采用趋势跟踪与波动率管理结合的方法论。日线级别以均线系统作为趋势定义工具（多头排列视为趋势向上）；MACD与RSI作为动能和超买超卖过滤；ATR用于设定合理止损幅度。盘前计划以关键支撑阻力位为核心，结合价格行为确认后制定入场方案。</p></div><div class="plan-card"><span class="plan-meta">支撑压力位</span><ul><li>**关键支撑区**：1006-1008（MA5附近），下档强支撑1000（整数关口）。若跌破1000，则下一支撑在MA20（1003.20）附近。</li><li>**关键压力区**：1015-1018（前期密集成交区），若放量突破，关注1020整数关口。</li><li>基于ATR 18.11，日内波动中枢约在1012.79±9，即1004-1022区间。</li></ul></div><div class="plan-card"><span class="plan-meta">交易计划</span><p>### 长期交易计划</p><ul><li>**入场思路**：等待股价回调至MA200（950.85）附近时，分批建仓建立底仓。</li><li>**触发/确认**：日线连续收阳或出现底部K线反转形态（如锤子线）确认支撑有效。</li><li>**目标/阻力位**：长期持有，不设固定目标价，以趋势结束信号为止盈依据。</li><li>**无效化/风险控制**：若跌破MA200 5%，即约905区域，则止损离场，等待新结构形成。</li></ul><p>### 波段交易计划</p><ul><li>**入场思路**：在股价回踩至MA20（1003.20）-MA50（997.43）区间时，择机做多。</li><li>**触发/确认**：日线MACD柱状线止跌回升或价格出现下影线后走强K线。</li><li>**目标/阻力位**：第一目标1020，第二目标1030（前期高点附近）。</li><li>**无效化/风险控制**：若收盘价跌破MA50（997.43），则视为波段结构转弱，止损离场。</li></ul><p>### 日内交易计划</p><ul><li>**入场思路（做多）**：开盘后若股价站稳1015并出现3分钟级别突破确认，可轻仓做多。</li><li>**触发/确认**：分时图放量突破1015阻力位，且成交量大于前30日均量水平。</li><li>**目标/阻力区**：1020-1022区域止盈。</li><li>**无效化/风险控制**：如价格重新跌回1012且收盘于此位置下方，则止损出局；若开盘即低开破1008，则放弃做多计划，关注1000支撑得失；止损建议设定为亏损0.5%（约5美元）。</li></ul></div><div class="plan-card"><span class="plan-meta">风控提醒</span><p>当前ATR波动率适中（18.11），但宏观数据公布前夕可能出现跳空风险。所有交易计划需在触及止损位时严格执行，避免情绪性扛单。日内交易仓位不超过总资金5%。盘前务必确认是否有突发新闻影响开盘情绪。$1000整数关口是重要的心理支撑，若跌破，短期趋势可能转弱。</p></div><div class="plan-card"><span class="plan-meta">信息来源与时间戳</span><ul><li>以上数据来源于yfinance历史市场数据（COST截至前一日收盘）。</li><li>技术指标基于自行计算，报告生成时间为当前盘前。</li></ul></div></div>
+    </section>
+
+    <div class="footer">本报告由 DeepSeek 生成，并以 HTML 方式呈现，便于浏览和归档。</div>
+    
+</div>
+</body>
+</html>

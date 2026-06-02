@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COST / MSFT Premarket Report</title>
+<style>
+:root {
+  --ink:#1f2937;
+  --muted:#5b6472;
+  --accent:#123b45;
+  --line:#d6dde3;
+  --good:#0f766e;
+  --warn:#b45309;
+  --bad:#b91c1c;
+  --bg:#f6f1e8;
+  --card:#ffffff;
+}
+* { box-sizing:border-box; }
+body { margin:0; font:16px/1.55 Arial, sans-serif; background:linear-gradient(180deg,#f6f1e8 0%,#f8fafc 100%); color:var(--ink); }
+.main { max-width:1120px; margin:0 auto; padding:32px 24px 72px; }
+.symbol-picker { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:22px; padding:14px 16px; background:rgba(255,255,255,.78); border:1px solid var(--line); border-radius:12px; }
+.symbol-picker label { color:var(--muted); font-size:14px; font-weight:700; }
+select { appearance:none; min-width:180px; border:1px solid var(--line); border-radius:10px; padding:10px 38px 10px 14px; font:700 15px Arial,sans-serif; color:#14213d; background:#fff; }
+.picker-meta { color:var(--muted); font-size:13px; }
+.ticker-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.ticker-link { display:inline-flex; align-items:center; border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; color:#19324d; font-size:13px; font-weight:700; text-decoration:none; }
+.ticker-link:hover { text-decoration:underline; }
+.ticker-link.is-active { background:#e7f4ef; color:#0f766e; border-color:#a9d8c8; }
+.toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.toolbar-left, .toolbar-right { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.brand { font-weight:700; color:#14213d; letter-spacing:.02em; }
+.tool-chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; color:#19324d; font-size:13px; font-weight:700; }
+.hero { border-left:8px solid var(--good); padding:8px 0 8px 24px; margin-bottom:28px; }
+.hero h1 { margin:0 0 8px; font-size:40px; line-height:1.1; color:#14213d; }
+.hero p { margin:6px 0; color:var(--muted); }
+.summary { background:rgba(255,255,255,.74); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0 28px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:18px 0 28px; }
+.columns { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+.plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+.card, .plan-card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 10px 24px rgba(18,59,69,.06); }
+.metric-card .value { font-size:30px; font-weight:700; color:#14213d; }
+.card .label { color:var(--muted); font-size:13px; margin-bottom:8px; }
+.card .value { color:#14213d; }
+section { margin:28px 0; }
+section h2 { margin:0 0 14px; font-size:24px; color:#14213d; }
+section h3 { margin:18px 0 10px; font-size:18px; color:#19324d; }
+.plan-card h3 { margin:0 0 8px; }
+.plan-meta { display:inline-block; margin-bottom:12px; padding:5px 10px; border-radius:999px; background:#e8eef5; color:#19324d; font-size:12px; font-weight:700; }
+.plan-card p { margin:10px 0; }
+ul { margin:10px 0 0 20px; padding:0; }
+.pill { display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; background:#e7f4ef; color:#0f766e; }
+.pill.neutral { background:#fff4df; color:#b45309; }
+.pill.bad { background:#fde8e8; color:#b91c1c; }
+.pill.good { background:#e7f4ef; color:#0f766e; }
+.muted { color:var(--muted); }
+.footer { margin-top:38px; font-size:13px; color:var(--muted); }
+html.js-enabled .ticker-panel { display:none; }
+html.js-enabled .ticker-panel.is-active { display:block; }
+@media (max-width: 640px) {
+  .hero h1 { font-size:30px; }
+  .symbol-picker { align-items:stretch; }
+  select { width:100%; }
+}
+</style>
+</head>
+<body>
+<div class="main">
+  <div class="symbol-picker">
+    <div>
+      <label for="tickerSelect">股票代码</label>
+      <div class="picker-meta">选择 symbol 查看对应盘前计划；手机预览不切换时可点下方代码跳转</div>
+      <div class="ticker-links"><a class="ticker-link" href="#ticker-COST" data-ticker="COST">COST</a><a class="ticker-link" href="#ticker-MSFT" data-ticker="MSFT">MSFT</a></div>
+    </div>
+    <select id="tickerSelect"><option value="COST">COST</option><option value="MSFT">MSFT</option></select>
+  </div>
+  
+    <article id="ticker-COST" class="ticker-panel is-active" data-ticker="COST">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="brand">DeepSeek HTML Report</span>
+          <span class="pill good">偏多</span>
+        </div>
+        <div class="toolbar-right">
+          <span class="tool-chip">COST</span>
+          <span class="tool-chip">premarket</span>
+        </div>
+      </div>
+
+      <div class="hero">
+        <h1>COST 深度盘前报告</h1>
+        <p>COST 上一交易日收盘 1015.00 美元，涨幅 1.55%，延续近期上行趋势。标普500 与消费板块整体平稳，无重大宏观干扰。当前处于财报空窗期，市场以技术面与资金流向主导。</p>
+        <p class="muted">生成时间：2026-05-12 10:28:43 EDT</p>
+      </div>
+
+      <div class="summary"><p>COST 上一交易日收盘 1015.00 美元，涨幅 1.55%，延续近期上行趋势。标普500 与消费板块整体平稳，无重大宏观干扰。当前处于财报空窗期，市场以技术面与资金流向主导。</p><p>报告类型：premarket 生成时间：2026-05-12 10:28:43 EDT 当前结论：偏多</p></div>
+
+      <section>
+        <h2>关键指标</h2>
+        <div class="grid"><div class="card metric-card"><div class="label">最新收盘</div><div class="value">$1015.00</div></div><div class="card metric-card"><div class="label">前收盘</div><div class="value">$999.47</div></div><div class="card metric-card"><div class="label">日涨跌幅</div><div class="value">1.55%</div></div><div class="card metric-card"><div class="label">MA20</div><div class="value">$1004.10</div></div><div class="card metric-card"><div class="label">RSI14</div><div class="value">54.91</div></div><div class="card metric-card"><div class="label">ATR14</div><div class="value">$18.58</div></div></div>
+      </section>
+
+      <section>
+        <h2>技术概览</h2>
+        <div class="columns">
+          <div class="card"><h3>趋势结构</h3><p>MA5 / MA20：$1006.21 / $1004.10</p><p>MA50 / MA200：$998.79 / $952.83</p></div><div class="card"><h3>动量信号</h3><p>RSI14：54.91</p><p>MACD线：3.28</p><p>MACD信号：3.32</p><p>MACD柱状：-0.04</p></div><div class="card"><h3>波动参考</h3><p>ATR14：$18.58</p><p>用于评估盘前波动空间与止损距离。</p></div>
+          <div class="card">
+            <h3>盘前摘要</h3>
+            <p>收盘价 $1015.00，前收盘 $999.47。 日涨跌幅 1.55%。 MA20 $1004.10，MA50 $998.79，MA200 $952.83。 RSI14 54.91，ATR14 $18.58。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepSeek 分析</h2>
+        <div class="plan-grid"><div class="plan-card"><span class="plan-meta">市场背景</span><p>COST 上一交易日收盘 1015.00 美元，涨幅 1.55%，延续近期上行趋势。标普500 与消费板块整体平稳，无重大宏观干扰。当前处于财报空窗期，市场以技术面与资金流向主导。</p></div><div class="plan-card"><span class="plan-meta">前一交易日复盘</span><p>收于三周高点，日线呈小阳线，成交量未见异常放大。MA5（1006.2）与 MA20（1004.1）持续上移，提供短期支撑。RSI 54.9 处于中性偏强区间，MACD 柱状图微负（-0.037），暗示上行动能略有减弱，但指标线仍维持在信号线上方，趋势未破。</p></div><div class="plan-card"><span class="plan-meta">基本面与催化</span><p>暂无重大基本面变化。COST 凭借会员制、高周转与定价权保持稳健现金流。关注本周消费信心指数或零售销售数据对板块情绪的影响，但无直接公司级催化剂。</p></div><div class="plan-card"><span class="plan-meta">新闻与信息流</span><p>暂无可用实时新闻摘要。</p></div><div class="plan-card"><span class="plan-meta">分析师快照</span><p>暂无可用分析师评级或目标价数据。</p></div><div class="plan-card"><span class="plan-meta">市场情绪拆解</span><p>RSI 54.9，短期非超买，买方仍有空间。MACD 柱状转负但幅度极小，可视为趋势中的短暂换手。ATR 18.6 处于常规波动范围，成交量无明显异常，整体情绪温和偏多，需警惕获利回吐。</p></div><div class="plan-card"><span class="plan-meta">技术分析</span><ul><li>**均线**：MA5 &gt; MA20 &gt; MA50 &gt; MA200，标准多头排列，价格稳于所有均线上方。</li><li>**MACD**：柱状图微负，若连续两日扩大负值则需注意短期调整。</li><li>**支撑**：MA5（1006）、MA20（1004）、前低 999.5。</li><li>**阻力**：近期区间上沿 1018–1020（前高区域）、整数关口 1025。</li></ul></div><div class="plan-card"><span class="plan-meta">交易方法说明</span><p>本报告采用趋势跟踪结合均值回归框架。长期以 MA200 为价值锚定；波段关注 MA5/20 金叉死叉与 MACD 柱状变化；日内利用 ATR 设定高概率入场信号，不考虑激进追涨。</p></div><div class="plan-card"><span class="plan-meta">支撑压力位</span><ul><li>**强支撑**：998.8（MA50）、952.8（MA200）——跌破前趋势不改，但需严格风控。</li><li>**次支撑**：1004（MA20）、1006（MA5）。</li><li>**轻度阻力**：1018–1020（前期密集区）。</li><li>**强阻力**：1025（整数心理位+近 5 日高点延伸）。</li></ul></div><div class="plan-card"><span class="plan-meta">交易计划</span><p>### 长期交易计划</p><ul><li>**入场想法**：等待回调至 MA200（952.8）附近逐步建仓，或财报后有明确基本面利好时买入。</li><li>**触发/确认**：价格回踩 MA200 后出现日线级别阳线收于其上，或发出大额回购、扩张消息。</li><li>**目标/阻力区域**：长期持有，目标前高 1050+（约 10% 空间）。</li><li>**无效/风险控制**：跌破 MA200 超过 3% 且伴随放量，则暂停长期仓位，重新评估基本面。</li></ul><p>### 波段交易计划</p><ul><li>**入场想法**：当前多头排列稳健，可考虑沿 MA5（1006）或 MA20（1004）低吸。</li><li>**触发/确认**：价格回踩 MA5 并出现 15 分钟级别企稳信号（如阳线收复开盘价）。</li><li>**目标/阻力区域**：第一目标 1018–1020，第二目标 1025。</li><li>**无效/风险控制**：收于 MA20（1004）下方止损，或跌破前日低点 1010（盘中快速击穿）。止损宽度约 1.5–2 倍 ATR（28–37 美元）。</li></ul><p>### 日内交易计划</p><ul><li>**入场想法**：若开盘平开或微回调至 1010–1012 区域，可轻仓试多。</li><li>**触发/确认**：开盘 15 分钟内站稳 1012 且未破前日收盘 1015 低点。</li><li>**目标/阻力区域**：1018–1020，若强势突破 1020 可看 1025。</li><li>**无效/风险控制**：跌破 1010（日内支撑）立即止损；或开盘 30 分钟内价格仍低于 1012 则放弃。止损宽度设定为 0.5%–1%（约 5–10 美元）。</li></ul></div><div class="plan-card"><span class="plan-meta">风控提醒</span><ul><li>最大单笔亏损控制在账户总资金 2% 以内。</li><li>日内交易避免隔夜持仓；若 ATR 扩大至 25 以上，降低仓位规模。</li><li>周日线级别若出现长上影线或放量阴线，暂停短线交易。</li><li>当前位置（1015）处于短期阻力边缘，追高盈亏比不佳；耐心等待回踩或有效突破再入场。</li></ul></div><div class="plan-card"><span class="plan-meta">信息来源与时间戳</span><ul><li>**数据来源**：yfinance 历史市场数据（含最新收盘价、技术指标）。</li><li>**报告生成时间**：本报告基于输入数据实时生成，具体时间戳未记录。</li></ul></div></div>
+      </section>
+    </article>
+    
+    <article id="ticker-MSFT" class="ticker-panel" data-ticker="MSFT">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="brand">DeepSeek HTML Report</span>
+          <span class="pill bad">偏空</span>
+        </div>
+        <div class="toolbar-right">
+          <span class="tool-chip">MSFT</span>
+          <span class="tool-chip">premarket</span>
+        </div>
+      </div>
+
+      <div class="hero">
+        <h1>MSFT 深度盘前报告</h1>
+        <p>隔夜美股科技板块整体承压，市场在等待新的催化剂前呈现区间震荡格局。利率预期与宏观经济数据仍然是主导情绪的核心变量。MSFT作为权重股，走势反映了大型科技股在当前缺乏明确方向时的观望情绪。</p>
+        <p class="muted">生成时间：2026-05-12 10:28:43 EDT</p>
+      </div>
+
+      <div class="summary"><p>隔夜美股科技板块整体承压，市场在等待新的催化剂前呈现区间震荡格局。利率预期与宏观经济数据仍然是主导情绪的核心变量。MSFT作为权重股，走势反映了大型科技股在当前缺乏明确方向时的观望情绪。</p><p>报告类型：premarket 生成时间：2026-05-12 10:28:43 EDT 当前结论：偏空</p></div>
+
+      <section>
+        <h2>关键指标</h2>
+        <div class="grid"><div class="card metric-card"><div class="label">最新收盘</div><div class="value">$409.63</div></div><div class="card metric-card"><div class="label">前收盘</div><div class="value">$412.66</div></div><div class="card metric-card"><div class="label">日涨跌幅</div><div class="value">-0.73%</div></div><div class="card metric-card"><div class="label">MA20</div><div class="value">$418.38</div></div><div class="card metric-card"><div class="label">RSI14</div><div class="value">50.17</div></div><div class="card metric-card"><div class="label">ATR14</div><div class="value">$11.72</div></div></div>
+      </section>
+
+      <section>
+        <h2>技术概览</h2>
+        <div class="columns">
+          <div class="card"><h3>趋势结构</h3><p>MA5 / MA20：$414.43 / $418.38</p><p>MA50 / MA200：$398.77 / $464.65</p></div><div class="card"><h3>动量信号</h3><p>RSI14：50.17</p><p>MACD线：4.43</p><p>MACD信号：6.18</p><p>MACD柱状：-1.75</p></div><div class="card"><h3>波动参考</h3><p>ATR14：$11.72</p><p>用于评估盘前波动空间与止损距离。</p></div>
+          <div class="card">
+            <h3>盘前摘要</h3>
+            <p>收盘价 $409.63，前收盘 $412.66。 日涨跌幅 -0.73%。 MA20 $418.38，MA50 $398.77，MA200 $464.65。 RSI14 50.17，ATR14 $11.72。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepSeek 分析</h2>
+        <div class="plan-grid"><div class="plan-card"><span class="plan-meta">市场背景</span><p>隔夜美股科技板块整体承压，市场在等待新的催化剂前呈现区间震荡格局。利率预期与宏观经济数据仍然是主导情绪的核心变量。MSFT作为权重股，走势反映了大型科技股在当前缺乏明确方向时的观望情绪。</p></div><div class="plan-card"><span class="plan-meta">前一交易日复盘</span><p>MSFT昨日收盘报409.63美元，较前日下跌0.73%，日内波动幅度有限。股价低于5日均线（414.43）和20日均线（418.38），显示短期动能偏弱。但股价仍位于50日均线（398.77）之上，中期结构未遭破坏。成交量未出现异常放大，说明抛压相对有序。</p></div><div class="plan-card"><span class="plan-meta">基本面与催化</span><p>暂无最新基本面催化更新。市场对微软的关注点集中在云业务增长趋势、人工智能商业化进展以及资本支出节奏。公司无近期财报安排，股价走势更依赖于宏观情绪和行业轮动。</p></div><div class="plan-card"><span class="plan-meta">新闻与信息流</span><p>暂无可用实时新闻摘要。</p></div><div class="plan-card"><span class="plan-meta">分析师快照</span><p>暂无可用分析师评级或目标价数据。</p></div><div class="plan-card"><span class="plan-meta">市场情绪拆解</span><p>当前MSFT的多空情绪趋于平衡。RSI为50.17，处于中性区间，没有明显的超买或超卖信号。MACD指标方面，柱状图仍为负值，显示短期动力持续减弱，但DIF线尚未跌破DEA线，死叉未完全确认。市场参与者仍在等待方向性突破信号，参与意愿较低。</p></div><div class="plan-card"><span class="plan-meta">技术分析</span><p>MSFT目前处于均线纠结阶段：股价位于5日和20日均线之下，但位于50日均线之上。5日线已下穿20日线，形成短期死叉，对价格构成压制。MACD动能柱持续收缩，显示上升动能衰竭。200日均线为464.65，远高于现价，表明长期上升趋势依然完整，但短期调整可能仍未结束。ATR为11.72，日内波动空间尚可，适合短线操作。</p></div><div class="plan-card"><span class="plan-meta">交易方法说明</span><p>本报告采用趋势跟踪与均线系统结合的方法，配合MACD与RSI来确认入场时机。长期策略基于200日均线判断主趋势方向；波段策略利用20日均线与MACD柱状图的变化；日内策略则依赖5日均线和ATR动态支撑阻力。</p></div><div class="plan-card"><span class="plan-meta">支撑压力位</span><ul><li>**关键支撑区域**：398.77（50日均线）及405.00（近期低点附近）</li><li>**关键压力区域**：414.43（5日均线）及418.38（20日均线）</li><li>日内阻力参考：412.00-414.00区间（昨日高点区域）</li><li>日内支撑参考：406.00-408.00区间</li></ul></div><div class="plan-card"><span class="plan-meta">交易计划</span><p>### 长期交易计划</p><ul><li>**入场想法**：在200日均线（464.65）附近或当股价回调至50日均线支撑并企稳时，建立长期多头底仓。</li><li>**触发/确认**：股价有效站上200日均线；或者在398.77附近出现放量阳线、RSI回升至40以上。</li><li>**目标/压力区域**：长期看前高附近，无明确价格目标。</li><li>**失效/风控**：若股价跌破200日均线并确认趋势转空，或基本面出现重大不利变化，则离场观察。</li></ul><p>### 波段交易计划</p><ul><li>**入场想法**：利用当前调整，在股价回落至405-408区间时分批低吸，博取反弹至20日均线（418.38）的波段利润。</li><li>**触发/确认**：K线出现止跌信号（长下影线、阳包阴），且MACD柱状图开始缩短，RSI回升至50以上。</li><li>**目标/压力区域**：第一目标415（5日均线附近），第二目标418（20日均线附近）。</li><li>**失效/风控**：若股价跌破398.77（50日均线）且无法收回，则止损离场，亏损控制在3%以内。</li></ul><p>### 日内交易计划</p><ul><li>**入场想法**：开盘后等待价格回调至406-408区域（昨日盘中低点附近）企稳后轻仓做多。</li><li>**触发/确认**：价格在支撑区企稳并出现分时级别的反转形态（如W底、头肩底），配合成交量放大。</li><li>**目标/压力区域**：第一目标412，第二目标414；若行情强势，可看至416。</li><li>**失效/风控**：若开盘后直接跌破405且无明显反弹，则放弃日内做多计划。做多仓位止损设于404.5下方。</li></ul></div><div class="plan-card"><span class="plan-meta">风控提醒</span><p>当前市场缺乏明确方向，控制仓位为第一要务。长线仓位不超过总资金的30%，波段仓位建议15-20%，日内仓位控制在10%以内。所有操作应避免追涨杀跌，当价格跌破预设止损位时严格执行止损。若日内出现幅度超过1.5%的跳空缺口，建议暂停所有新开仓操作，等待市场稳定后再评估。</p></div><div class="plan-card"><span class="plan-meta">信息来源与时间戳</span><p>本文技术分析指标来源于yfinance历史日线市场数据，报告生成时间为当前。新闻与分析师信息因输入上下文未提供具体内容，未予引用。</p></div></div>
+      </section>
+    </article>
+    
+  <div class="footer">本报告由 DeepSeek 生成，并以单页 HTML 方式呈现。切换 symbol 不会触发新的 DeepSeek 调用。</div>
+</div>
+<script>
+document.documentElement.classList.add('js-enabled');
+const tickerSelect = document.getElementById('tickerSelect');
+const panels = Array.from(document.querySelectorAll('.ticker-panel'));
+const links = Array.from(document.querySelectorAll('.ticker-link'));
+function showTicker(ticker) {
+  panels.forEach(panel => {
+    panel.classList.toggle('is-active', panel.dataset.ticker === ticker);
+  });
+  links.forEach(link => {
+    link.classList.toggle('is-active', link.dataset.ticker === ticker);
+  });
+  tickerSelect.value = ticker;
+}
+tickerSelect.addEventListener('change', () => {
+  showTicker(tickerSelect.value);
+});
+links.forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault();
+    showTicker(link.dataset.ticker);
+    history.replaceState(null, '', link.getAttribute('href'));
+  });
+});
+const initialTicker = location.hash.replace('#ticker-', '');
+if (initialTicker && panels.some(panel => panel.dataset.ticker === initialTicker)) {
+  showTicker(initialTicker);
+} else {
+  showTicker(tickerSelect.value);
+}
+</script>
+</body>
+</html>
